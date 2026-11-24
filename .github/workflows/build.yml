@@ -24,11 +24,23 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build mod
-        run: chmod +x gradlew && ./gradlew build
+      - name: Extract and build mod
+        run: |
+          mkdir project
+          unzip -q ./*.zip -d project
+          GRADLEW=$(find project -type f -name gradlew | head -n 1)
+          if [ -z "$GRADLEW" ]; then
+            echo "Could not find gradlew"
+            exit 1
+          fi
+          cd "$(dirname "$GRADLEW")"
+          chmod +x gradlew
+          ./gradlew build
 
       - name: Upload mod JAR
         uses: actions/upload-artifact@v4
         with:
           name: built-mod
-          path: build/libs/*.jar
+          path: project/**/build/libs/*.jar
+
+        
